@@ -3,28 +3,32 @@ import axios from 'axios';
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '' });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/products')
-      .then(res => setProducts(res.data));
+    axios.get('/products')
+      .then(response => {
+        setProducts(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      });
   }, []);
 
-  const addProduct = () => {
-    axios.post('http://localhost:8080/api/products', newProduct)
-      .then(res => setProducts([...products, res.data]));
-  };
+  if (loading) return <div>Loading products...</div>;
 
   return (
-    <div>
-      <h1>Products</h1>
-      <input placeholder="Name" onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} />
-      <input placeholder="Description" onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} />
-      <input type="number" placeholder="Price" onChange={e => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} />
-      <button onClick={addProduct}>Add Product</button>
+    <div style={{ padding: '20px' }}>
+      <h1>Product Catalog</h1>
+      {products.length === 0 && <p>No products available.</p>}
       <ul>
-        {products.map(p => (
-          <li key={p.id}>{p.name} - ${p.price}</li>
+        {products.map(product => (
+          <li key={product.id} style={{ marginBottom: '10px' }}>
+            <strong>{product.name}</strong> — ${product.price}
+            <p>{product.description}</p>
+          </li>
         ))}
       </ul>
     </div>
